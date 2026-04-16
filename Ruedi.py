@@ -1,7 +1,8 @@
 import string
+import random
 
 # -----------------------------
-# BASE DE CONOCIMIENTO COMPLETA
+# BASE DE CONOCIMIENTO
 # -----------------------------
 knowledge_base = {
     "señales": [
@@ -12,7 +13,7 @@ knowledge_base = {
                 "qué hago cuando veo stop",
                 "qué significa detenerse"
             ],
-            "answer": "La señal de ALTO (PARE) significa que debés detener completamente tu vehículo antes de la línea de parada. No podés avanzar hasta asegurarte de que no hay peligro. ¡Nunca pasés de largo!"
+            "answer": "La señal de ALTO (PARE) significa que debés detener completamente tu vehículo antes de la línea de parada."
         },
         {
             "patterns": [
@@ -21,58 +22,44 @@ knowledge_base = {
                 "cómo funciona ceda el paso",
                 "cuando veo un ceda qué hago"
             ],
-            "answer": "La señal de CEDA EL PASO indica que debés reducir la velocidad y dejar pasar a los vehículos que tienen prioridad."
-        },
-        {
-            "patterns": [
-                "qué significa la señal de no pasar",
-                "cuándo no puedo adelantar",
-                "qué indica línea amarilla continua",
-                "puedo adelantar con línea amarilla"
-            ],
-            "answer": "La línea amarilla continua prohíbe el adelantamiento. Debés mantenerte en tu carril."
+            "answer": "La señal de CEDA EL PASO indica que debés reducir la velocidad y dejar pasar a los vehículos con prioridad."
         }
     ],
-
     "prioridad": [
         {
             "patterns": [
                 "quién pasa primero en una rotonda",
-                "cómo funciona la rotonda",
-                "tengo prioridad en el redondel",
-                "a quién le cedo en la rotonda"
+                "cómo funciona la rotonda"
             ],
             "answer": "En una rotonda, los vehículos dentro tienen prioridad. Debés ceder el paso antes de entrar."
-        },
-        {
-            "patterns": [
-                "qué pasa en un cruce sin señales",
-                "quién tiene la vía en intersección",
-                "a quién le doy el paso en cruce sin semáforo",
-                "regla de la derecha en cruce"
-            ],
-            "answer": "En un cruce sin señales, cedés el paso al vehículo de la derecha."
         }
-    ],
+    ]
+}
 
-    "normas_circulacion": [
-        {
-            "patterns": [
-                "puedo usar el teléfono manejando",
-                "es ilegal usar el celular manejando"
-            ],
-            "answer": "Está prohibido usar el celular mientras manejás, salvo manos libres."
-        }
+# -----------------------------
+# MEMES POR CATEGORÍA
+# -----------------------------
+memes = {
+    "señales": [
+        "six seven 😎",
+        "STOP means STOP bro 🛑",
+        "no te la juegues 💀",
+        "esto es clave para el examen 👁️",
+        "cuando lo ignoras... 💀"
     ],
-
-    "limites_velocidad": [
-        {
-            "patterns": [
-                "límite de velocidad en ciudad",
-                "velocidad máxima en zona urbana"
-            ],
-            "answer": "En ciudad el límite general es 40 km/h."
-        }
+    "prioridad": [
+        "el que está adentro gana easy 🗿",
+        "turno basado en lógica 🧠",
+        "please speed i need this 🏃",
+        "AY AY AYYY AY 🗣️",
+        "esto cae fijo en el examen 💀"
+    ],
+    "default": [
+        "cuando estudias para el examen en python 💀",
+        "mi lente de contacto 👁️",
+        "six seven 😎",
+        "xd",
+        "esto es cine 🚬"
     ]
 }
 
@@ -87,11 +74,7 @@ def limpiar_texto(texto):
 
     tokens = texto.split()
 
-    stopwords = [
-        "el", "la", "los", "las", "de", "del", "que",
-        "como", "cuando", "a", "en", "un", "una", "y",
-        "es", "qué", "para"
-    ]
+    stopwords = ["el", "la", "de", "que", "a", "en", "y", "es"]
 
     tokens_limpios = []
 
@@ -129,43 +112,53 @@ def calcular_coincidencia(tokens_usuario, pattern):
 # -----------------------------
 def buscar_respuesta(tokens_usuario):
     mejor_respuesta = None
+    mejor_categoria = "default"
     max_coincidencias = 0
 
     for categoria in knowledge_base:
         for item in knowledge_base[categoria]:
             for pattern in item["patterns"]:
-
                 score = calcular_coincidencia(tokens_usuario, pattern)
 
                 if score > max_coincidencias:
                     max_coincidencias = score
                     mejor_respuesta = item["answer"]
+                    mejor_categoria = categoria
 
-    return mejor_respuesta
+    return mejor_respuesta, mejor_categoria
 
 # -----------------------------
-# GENERAR RESPUESTA FINAL
+# PERSONALIDAD
 # -----------------------------
-def generar_respuesta(intencion, respuesta_base):
+def agregar_personalidad(respuesta, categoria):
+    meme_lista = memes.get(categoria, memes["default"])
+    meme1 = random.choice(meme_lista)
+    meme2 = random.choice(meme_lista)
+    return f"{respuesta} — {meme1} | {meme2}"
+
+# -----------------------------
+# GENERAR RESPUESTA
+# -----------------------------
+def generar_respuesta(intencion, respuesta_base, categoria):
     if intencion == "saludo":
-        return "Hola 🚗 soy Ruedi, ¿en qué te ayudo?"
+        return "Qué onda amigazo 😎 soy Ruedi, listo para salvar ese examen 🚗"
 
     if intencion == "despedida":
-        return "¡Pura vida! 🚗"
+        return "De una amigazo, éxito total 🚗🔥"
 
     if intencion == "pregunta":
         if respuesta_base:
-            return respuesta_base
+            return agregar_personalidad(respuesta_base, categoria)
         else:
-            return "No encontré información sobre eso 😅"
+            return agregar_personalidad("No encontré info de eso, pero seguimos en modo estudio", "default")
 
-    return "No entendí tu mensaje"
+    return "No logré entender eso bien, probá con otra pregunta 🚗"
 
 # -----------------------------
 # CHATBOT
 # -----------------------------
 def chatbot():
-    print("Ruedi 🤖 listo para ayudarte. Escribí 'salir' para terminar.\n")
+    print("Ruedi 🤖 modo chaviza activado. Escribí 'salir' para terminar.\n")
 
     while True:
         user_input = input("Vos: ")
@@ -175,10 +168,12 @@ def chatbot():
 
         tokens = limpiar_texto(user_input)
         intencion = detectar_intencion(tokens)
-        respuesta_base = buscar_respuesta(tokens)
-        respuesta_final = generar_respuesta(intencion, respuesta_base)
+        respuesta_base, categoria = buscar_respuesta(tokens)
+        respuesta_final = generar_respuesta(intencion, respuesta_base, categoria)
 
         print("Ruedi:", respuesta_final)
 
-
+# -----------------------------
+# EJECUTAR
+# -----------------------------
 chatbot()
